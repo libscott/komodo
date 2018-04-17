@@ -1166,7 +1166,7 @@ bool CheckTransactionWithoutProofVerification(const CTransaction& tx, CValidatio
         }
     }
 
-    if (tx.IsMint())
+    if (tx.IsCoinBase())
     {
         // There should be no joinsplits in a coinbase transaction
         if (tx.vjoinsplit.size() > 0)
@@ -1322,15 +1322,19 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
             view.SetBackend(viewMemPool);
             
             // do we already have it?
-            // This is what stops coin import transactions from being double spent; they
-            // grow the UTXO set size slightly
             if (view.HaveCoins(hash))
             {
                 fprintf(stderr,"view.HaveCoins(hash) error\n");
                 return state.Invalid(false, REJECT_DUPLICATE, "already have coins");
             }
             
-            if (!tx.IsCoinImport())
+            if (tx.IsCoinImport())
+            {
+                // Inverse of normal case; if input exists, it's been spent
+                if (ExistsImportTombstone(tx, view))
+                    return state.Invalid(false, REJECT_DUPLICATE, "import tombstone exists");
+            }
+            else
             {
                 // do all inputs exist?
                 // Note that this does not check for the presence of actual outputs (see the next check for that),
@@ -1935,6 +1939,13 @@ void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo &txund
         }
     }
     inputs.ModifyCoins(tx.GetHash())->FromTx(tx, nHeight); // add outputs
+    
+    // Unorthodox state
+    if (tx.IsCoinImport()) {
+        // add a tombstone for the burnTx
+        AddImportTombstone(tx, inputs, nHeight);
+    }
+
 }
 
 void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, int nHeight)
@@ -2327,6 +2338,10 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
                 if (!ApplyTxInUndo(undo, view, out))
                     fClean = false;
             }
+        }
+        else if (tx.IsCoinImport())
+        {
+            RemoveImportTombstone(tx, view);
         }
     }
 
