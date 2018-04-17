@@ -8,7 +8,7 @@
 #include "chainparams.h"
 #include "checkpoints.h"
 #include "consensus/validation.h"
-#include "cc/betprotocol.h"
+#include "cc/eval.h"
 #include "main.h"
 #include "primitives/transaction.h"
 #include "rpcserver.h"
@@ -708,7 +708,7 @@ UniValue txMoMproof(const UniValue& params, bool fHelp)
 
     // Encode and return
     CDataStream ssProof(SER_NETWORK, PROTOCOL_VERSION);
-    ssProof << MoMProof(nIndex, branch, notarisationHash);
+    ssProof << std::make_pair(notarisationHash, MerkleBranch(nIndex, branch));
     return HexStr(ssProof.begin(), ssProof.end());
 }
 
