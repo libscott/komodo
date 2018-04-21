@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright © 2014-2017 The SuperNET Developers.                             *
+ * Copyright © 2014-2018 The SuperNET Developers.                             *
  *                                                                            *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
  * the top-level directory of this distribution for the individual copyright  *
@@ -1365,7 +1365,7 @@ void komodo_configfile(char *symbol,uint16_t port)
 #ifndef FROM_CLI
             if ( (fp= fopen(fname,"wb")) != 0 )
             {
-                fprintf(fp,"rpcuser=user%u\nrpcpassword=pass%s\nrpcport=%u\nserver=1\ntxindex=1\nrpcworkqueue=64\nrpcallowip=127.0.0.1\n",crc,password,port);
+                fprintf(fp,"rpcuser=user%u\nrpcpassword=pass%s\nrpcport=%u\nserver=1\ntxindex=1\nrpcworkqueue=256\nrpcallowip=127.0.0.1\n",crc,password,port);
                 fclose(fp);
                 printf("Created (%s)\n",fname);
             } else printf("Couldnt create (%s)\n",fname);
@@ -1422,6 +1422,8 @@ uint16_t komodo_userpass(char *userpass,char *symbol)
     {
         port = komodo_userpass(username,password,fp);
         sprintf(userpass,"%s:%s",username,password);
+        if ( strcmp(symbol,ASSETCHAINS_SYMBOL) == 0 )
+            strcpy(ASSETCHAINS_USERPASS,userpass);
         fclose(fp);
         return((int32_t)strlen(userpass));
     }
@@ -1501,7 +1503,7 @@ char *argv0names[] =
 void komodo_args(char *argv0)
 {
     extern int64_t MAX_MONEY;
-    std::string name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; int32_t i,baseid,len,n,extralen = 0;
+    std::string name,addn; char *dirname,fname[512],arg0str[64],magicstr[9]; uint8_t magic[4],extrabuf[256],*extraptr=0; FILE *fp; uint64_t val; int32_t i,baseid,len,n,extralen = 0;
     IS_KOMODO_NOTARY = GetBoolArg("-notary", false);
     if ( (KOMODO_EXCHANGEWALLET= GetBoolArg("-exchange", false)) != 0 )
         fprintf(stderr,"KOMODO_EXCHANGEWALLET mode active\n");
@@ -1526,7 +1528,7 @@ void komodo_args(char *argv0)
             }
         }
     }
-    ASSETCHAINS_CC = GetArg("-ac_cc",0); // keep it outside the assetchains hashing so KMD can do it and we dont have two identical chains other than -ac_cc
+    ASSETCHAINS_CC = GetArg("-ac_cc",0);
     if ( (KOMODO_REWIND= GetArg("-rewind",0)) != 0 )
     {
         printf("KOMODO_REWIND %d\n",KOMODO_REWIND);
@@ -1540,6 +1542,8 @@ void komodo_args(char *argv0)
         ASSETCHAINS_DECAY = GetArg("-ac_decay",0);
         ASSETCHAINS_COMMISSION = GetArg("-ac_perc",0);
         ASSETCHAINS_OVERRIDE_PUBKEY = GetArg("-ac_pubkey","");
+        if ( (ASSETCHAINS_STAKED= GetArg("-ac_staked",0)) > 100 )
+            ASSETCHAINS_STAKED = 100;
         if ( ASSETCHAINS_HALVING != 0 && ASSETCHAINS_HALVING < 1440 )
         {
             ASSETCHAINS_HALVING = 1440;
@@ -1564,14 +1568,15 @@ void komodo_args(char *argv0)
         }
         if ( ASSETCHAINS_ENDSUBSIDY != 0 || ASSETCHAINS_REWARD != 0 || ASSETCHAINS_HALVING != 0 || ASSETCHAINS_DECAY != 0 || ASSETCHAINS_COMMISSION != 0 )
         {
-            printf("end.%llu reward.%llu halving.%llu decay.%llu perc.%llu\n",(long long)ASSETCHAINS_ENDSUBSIDY,(long long)ASSETCHAINS_REWARD,(long long)ASSETCHAINS_HALVING,(long long)ASSETCHAINS_DECAY,(long long)ASSETCHAINS_COMMISSION);
+            fprintf(stderr,"end.%llu blocks, reward %.8f halving.%llu blocks, decay.%llu perc %.4f%% ac_pub=[%02x...]\n",(long long)ASSETCHAINS_ENDSUBSIDY,dstr(ASSETCHAINS_REWARD),(long long)ASSETCHAINS_HALVING,(long long)ASSETCHAINS_DECAY,dstr(ASSETCHAINS_COMMISSION)*100,ASSETCHAINS_OVERRIDE_PUBKEY33[0]);
             extraptr = extrabuf;
             memcpy(extraptr,ASSETCHAINS_OVERRIDE_PUBKEY33,33), extralen = 33;
             extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(ASSETCHAINS_ENDSUBSIDY),(void *)&ASSETCHAINS_ENDSUBSIDY);
             extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(ASSETCHAINS_REWARD),(void *)&ASSETCHAINS_REWARD);
             extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(ASSETCHAINS_HALVING),(void *)&ASSETCHAINS_HALVING);
             extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(ASSETCHAINS_DECAY),(void *)&ASSETCHAINS_DECAY);
-            extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(ASSETCHAINS_COMMISSION),(void *)&ASSETCHAINS_COMMISSION);
+            val = ASSETCHAINS_COMMISSION | (((uint64_t)ASSETCHAINS_STAKED & 0xff) << 32) | (((uint64_t)ASSETCHAINS_CC & 0xffffff) << 40);
+            extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(val),(void *)&val);
         }
         addn = GetArg("-seednode","");
         if ( strlen(addn.c_str()) > 0 )
@@ -1582,6 +1587,7 @@ void komodo_args(char *argv0)
         else if ( ASSETCHAINS_REWARD == 0 )
             MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN;
         else MAX_MONEY = (ASSETCHAINS_SUPPLY+1) * SATOSHIDEN + ASSETCHAINS_REWARD * (ASSETCHAINS_ENDSUBSIDY==0 ? 10000000 : ASSETCHAINS_ENDSUBSIDY);
+        MAX_MONEY += (MAX_MONEY * ASSETCHAINS_COMMISSION) / SATOSHIDEN;
         //printf("baseid.%d MAX_MONEY.%s %.8f\n",baseid,ASSETCHAINS_SYMBOL,(double)MAX_MONEY/SATOSHIDEN);
         ASSETCHAINS_PORT = komodo_port(ASSETCHAINS_SYMBOL,ASSETCHAINS_SUPPLY,&ASSETCHAINS_MAGIC,extraptr,extralen);
         while ( (dirname= (char *)GetDataDir(false).string().c_str()) == 0 || dirname[0] == 0 )
@@ -1599,8 +1605,9 @@ void komodo_args(char *argv0)
             int32_t komodo_baseid(char *origbase);
             extern int COINBASE_MATURITY;
             komodo_configfile(ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT + 1);
+            komodo_userpass(ASSETCHAINS_USERPASS,ASSETCHAINS_SYMBOL);
             COINBASE_MATURITY = 1;
-						LogPrintf("ASSETCHAINS_PORT %s %u\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT);
+            //fprintf(stderr,"ASSETCHAINS_PORT %s %u (%s)\n",ASSETCHAINS_SYMBOL,ASSETCHAINS_PORT,ASSETCHAINS_USERPASS);
         }
         //ASSETCHAINS_NOTARIES = GetArg("-ac_notaries","");
         //komodo_assetchain_pubkeys((char *)ASSETCHAINS_NOTARIES.c_str());
@@ -1689,3 +1696,24 @@ struct komodo_state *komodo_stateptr(char *symbol,char *dest)
     komodo_nameset(symbol,dest,ASSETCHAINS_SYMBOL);
     return(komodo_stateptrget(symbol));
 }
+
+void komodo_prefetch(FILE *fp)
+{
+    long fsize,fpos; int32_t incr = 16*1024*1024;
+    fpos = ftell(fp);
+    fseek(fp,0,SEEK_END);
+    fsize = ftell(fp);
+    if ( fsize > incr )
+    {
+        char *ignore = (char *)malloc(incr);
+        if ( ignore != 0 )
+        {
+            rewind(fp);
+            while ( fread(ignore,1,incr,fp) == incr ) // prefetch
+                fprintf(stderr,".");
+            free(ignore);
+        }
+    }
+    fseek(fp,fpos,SEEK_SET);
+}
+

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright © 2014-2017 The SuperNET Developers.                             *
+ * Copyright © 2014-2018 The SuperNET Developers.                             *
  *                                                                            *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
  * the top-level directory of this distribution for the individual copyright  *
@@ -12,6 +12,7 @@
  * Removal or modification of this copyright notice is prohibited.            *
  *                                                                            *
  ******************************************************************************/
+
 
 #include "komodo_defs.h"
 
@@ -127,7 +128,7 @@ const char *Notaries_elected0[][2] =
 };
 
 #define KOMODO_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
-#define KOMODO_NOTARIES_HEIGHT1 ((820000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
+#define KOMODO_NOTARIES_HEIGHT1 ((814000 / KOMODO_ELECTION_GAP) * KOMODO_ELECTION_GAP)
 
 const char *Notaries_elected1[][2] =
 {
@@ -399,27 +400,39 @@ int32_t komodo_notarized_height(uint256 *hashp,uint256 *txidp)
     }
 }
 
-
-int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height)
+struct notarized_checkpoint *komodo_npptr(int32_t height)
 {
-    int32_t i; char symbol[KOMODO_ASSETCHAIN_MAXLEN],dest[KOMODO_ASSETCHAIN_MAXLEN]; struct komodo_state *sp; struct notarized_checkpoint *np = 0;
-    np = 0;
+    char symbol[KOMODO_ASSETCHAIN_MAXLEN],dest[KOMODO_ASSETCHAIN_MAXLEN]; int32_t i; struct komodo_state *sp; struct notarized_checkpoint *np = 0;
     if ( (sp= komodo_stateptr(symbol,dest)) != 0 )
     {
         for (i=sp->NUM_NPOINTS-1; i>=0; i--)
         {
             np = &sp->NPOINTS[i];
             if ( np->MoMdepth > 0 && height > np->notarized_height-np->MoMdepth && height <= np->notarized_height )
-            {
-                *notarized_htp = np->notarized_height;
-                *MoMp = np->MoM;
-                *kmdtxidp = np->notarized_desttxid;
-                return(np->MoMdepth);
-            }
+                return(np);
         }
     }
-    *notarized_htp = 0;
+    return(0);
+}
+
+int32_t komodo_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t height,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip)
+{
+    struct notarized_checkpoint *np = 0;
+    if ( (np= komodo_npptr(height)) != 0 )
+    {
+        *notarized_htp = np->notarized_height;
+        *MoMp = np->MoM;
+        *kmdtxidp = np->notarized_desttxid;
+        *MoMoMp = np->MoMoM;
+        *MoMoMoffsetp = np->MoMoMoffset;
+        *MoMoMdepthp = np->MoMoMdepth;
+        *kmdstartip = np->kmdstarti;
+        *kmdendip = np->kmdendi;
+        return(np->MoMdepth);
+    }
+    *notarized_htp = *MoMoMoffsetp = *MoMoMdepthp = *kmdstartip = *kmdendip = 0;
     memset(MoMp,0,sizeof(*MoMp));
+    memset(MoMoMp,0,sizeof(*MoMoMp));
     memset(kmdtxidp,0,sizeof(*kmdtxidp));
     return(0);
 }
@@ -529,50 +542,4 @@ void komodo_init(int32_t height)
         didinit = 1;
         komodo_stateupdate(0,0,0,0,zero,0,0,0,0,0,0,0,0,0,0,zero,0);
     }
-    /*else if ( 0 && height == KOMODO_MAINNET_START )
-    {
-        n = (int32_t)(sizeof(Notaries_elected)/sizeof(*Notaries_elected));
-        for (k=0; k<n; k++)
-        {
-            if ( Notaries_elected[k][0] == 0 || Notaries_elected[k][1] == 0 || Notaries_elected[k][0][0] == 0 || Notaries_elected[k][1][0] == 0 )
-                break;
-            decode_hex(pubkeys[k],33,(char *)Notaries_elected[k][1]);
-        }
-        printf("set MAINNET notaries.%d\n",k);
-        komodo_notarysinit(KOMODO_MAINNET_START,pubkeys,k);
-    }*/
 }
-
-/*void komodo_assetchain_pubkeys(char *jsonstr)
-{
-    cJSON *array; int32_t i,n; uint8_t pubkeys[64][33]; char *hexstr;
-    memset(pubkeys,0,sizeof(pubkeys));
-    if ( (array= cJSON_Parse(jsonstr)) != 0 )
-    {
-        if ( (n= cJSON_GetArraySize(array)) > 0 )
-        {
-            for (i=0; i<n; i++)
-            {
-                if ( (hexstr= jstri(array,i)) != 0 && is_hexstr(hexstr,0) == 66 )
-                {
-                    decode_hex(pubkeys[i],33,hexstr);
-                    fprintf(stderr,"i.%d of n.%d pubkey.(%s)\n",i,n,hexstr);
-                }
-                else
-                {
-                    fprintf(stderr,"illegal hexstr.(%s) i.%d of n.%d\n",hexstr,i,n);
-                    break;
-                }
-            }
-            if ( i == n )
-            {
-                komodo_init(-1);
-                komodo_notarysinit(0,pubkeys,n);
-                KOMODO_EXTERNAL_NOTARIES = 1;
-                //printf("initialize pubkeys[%d]\n",n);
-            } else fprintf(stderr,"komodo_assetchain_pubkeys i.%d vs n.%d\n",i,n);
-        } else fprintf(stderr,"assetchain pubkeys n.%d\n",n);
-    }
-    //else if ( jsonstr != 0 )
-    //    fprintf(stderr,"assetchain pubkeys couldnt parse.(%s)\n",jsonstr);
-}*/
