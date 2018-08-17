@@ -275,11 +275,15 @@ CC *cc_readConditionBinary(const unsigned char *cond_bin, size_t length) {
 
 
 int cc_isAnon(const CC *cond) {
+    ohi("cc_isAnon");
+    printf("%d\n", cond->type->typeId == CC_Anon);
+    printf("%u %i size: %i\n", cond->type->typeId, CC_Anon, sizeof(CC_Anon));
     return cond->type->typeId == CC_Anon;
 }
 
 
 enum CCTypeId cc_typeId(const CC *cond) {
+    ohi("cc_typeId");
     return cc_isAnon(cond) ? cond->conditionType->typeId : cond->type->typeId;
 }
 
