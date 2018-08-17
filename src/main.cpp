@@ -4175,6 +4175,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     {
         if ( komodo_validate_interest(tx,height == 0 ? komodo_block2height((CBlock *)&block) : height,block.nTime,0) < 0 )
             return error("CheckBlock: komodo_validate_interest failed");
+        printf("tx at height: %i\n", height);
         if (!CheckTransaction(tx, state, verifier))
             return error("CheckBlock: CheckTransaction failed");
     }

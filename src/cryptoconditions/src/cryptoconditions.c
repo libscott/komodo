@@ -319,12 +319,6 @@ CC *cc_new(int typeId) {
      printf("%i, %u\n", typeId, CCTypeRegistry[typeId]);
      printf("TypeRegLen: %u\n", CCTypeRegistryLength);
      otrace(CCTypeRegistry, CCTypeRegistryLength * sizeof(void*));
-     otrace(CCTypeRegistry[typeId], sizeof(CCType));
-    for (int i=0; i<CCTypeRegistryLength; i++)
-        if (CCTypeRegistry[i]) {
-            printf("Type: %i\n", i);
-            otrace(CCTypeRegistry[i], sizeof(CCType));
-        }
     ohi("cc_new");
      return cond;
 }

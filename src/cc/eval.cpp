@@ -71,6 +71,7 @@ bool Eval::Dispatch(const CC *cond, const CTransaction &txTo, unsigned int nIn)
         cp->didinit = 1;
     }
     std::vector<uint8_t> vparams(cond->code+1, cond->code+cond->codeLength);
+    printf("Enter ProcessCC\n");
     switch ( ecode )
     {
         case EVAL_IMPORTPAYOUT:
@@ -85,6 +86,7 @@ bool Eval::Dispatch(const CC *cond, const CTransaction &txTo, unsigned int nIn)
             return(ProcessCC(cp,this, vparams, txTo, nIn));
             break;
     }
+    printf("Exit ProcessCC\n");
     return Invalid("invalid-code, dont forget to add EVAL_NEWCC to Eval::Dispatch");
 }
 
