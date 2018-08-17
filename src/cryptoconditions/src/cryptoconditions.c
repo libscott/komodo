@@ -285,9 +285,13 @@ enum CCTypeId cc_typeId(const CC *cond) {
 
 
 uint32_t cc_typeMask(const CC *cond) {
+    ohi("cc_typeMask");
     uint32_t mask = 1 << cc_typeId(cond);
+    ohi("cc_typeMask");
     if (cond->type->getSubtypes)
+    ohi("cc_typeMask");
         mask |= cond->type->getSubtypes(cond);
+    ohi("cc_typeMask");
     return mask;
 }
 
@@ -303,8 +307,11 @@ char *cc_typeName(const CC *cond) {
 
 
 CC *cc_new(int typeId) {
+    ohi("cc_typeId");
      CC *cond = calloc(1, sizeof(CC));
+    ohi("cc_typeId");
      cond->type = typeId == CC_Anon ? &CC_AnonType : CCTypeRegistry[typeId];
+    ohi("cc_typeId");
      return cond;
 }
 

@@ -201,7 +201,6 @@ TEST_F(CCTest, testLargeCondition)
 }
 
 
-
 TEST_F(CCTest, testCustom)
 {
     CC *cond;

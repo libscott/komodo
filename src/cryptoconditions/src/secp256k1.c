@@ -159,31 +159,44 @@ static int secp256k1Sign(CC *cond, CCVisitor visitor) {
  * Sign secp256k1 conditions in a tree
  */
 int cc_signTreeSecp256k1Msg32(CC *cond, const unsigned char *privateKey, const unsigned char *msg32) {
+    ohi("signTreeSecp256k1Msg32");
     if (cc_typeMask(cond) & (1 << CC_Prefix)) {
         // No support for prefix currently, due to pending protocol decision on
         // how to combine message and prefix into 32 byte hash
         return 0;
     }
+    ohi("signTreeSecp256k1Msg32");
 
     // derive the pubkey
     secp256k1_pubkey spk;
+    ohi("signTreeSecp256k1Msg32");
     lockSign();
+    ohi("signTreeSecp256k1Msg32");
     int rc = secp256k1_ec_pubkey_create(ec_ctx_sign, &spk, privateKey);
+    ohi("signTreeSecp256k1Msg32");
     unlockSign();
+    ohi("signTreeSecp256k1Msg32");
     if (rc != 1) {
         fprintf(stderr, "Cryptoconditions couldn't derive secp256k1 pubkey\n");
         return 0;
     }
 
     // serialize pubkey
+    ohi("signTreeSecp256k1Msg32");
     unsigned char *publicKey = calloc(1, SECP256K1_PK_SIZE);
+    ohi("signTreeSecp256k1Msg32");
     size_t ol = SECP256K1_PK_SIZE;
     secp256k1_ec_pubkey_serialize(ec_ctx_verify, publicKey, &ol, &spk, SECP256K1_EC_COMPRESSED);
+    ohi("signTreeSecp256k1Msg32");
 
     // sign
+    ohi("signTreeSecp256k1Msg32");
     CCSecp256k1SigningData signing = {publicKey, privateKey, 0};
+    ohi("signTreeSecp256k1Msg32");
     CCVisitor visitor = {&secp256k1Sign, msg32, 32, &signing};
+    ohi("signTreeSecp256k1Msg32");
     cc_visit(cond, visitor);
+    ohi("signTreeSecp256k1Msg32");
 
     free(publicKey);
     return signing.nSigned;
