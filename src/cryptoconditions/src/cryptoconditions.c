@@ -134,6 +134,7 @@ size_t cc_conditionBinary(const CC *cond, unsigned char *buf) {
 size_t cc_fulfillmentBinary(const CC *cond, unsigned char *buf, size_t length) {
     Fulfillment_t *ffill = asnFulfillmentNew(cond);
     ohi("cc_fulfillmentBinary");
+    ohi(cc_conditionToJSONString(cond));
     asn_enc_rval_t rc = der_encode_to_buffer(&asn_DEF_Fulfillment, ffill, buf, length);
     if (rc.encoded == -1) {
         fprintf(stderr, "FULFILLMENT NOT ENCODED\n");

@@ -207,7 +207,9 @@ TEST_F(CCTest, testCustom)
     CC *cond;
     cond = CCNewSecp256k1(notaryKey.GetPubKey());
     uint8_t msg[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    ohi("signing tree");
     cc_signTreeSecp256k1Msg32(cond, notaryKey.begin(), msg);
+    ohi("signed tree");
 
     uint8_t buf[1000];
     size_t encodedSize = cc_fulfillmentBinary(cond, buf, 1000);
