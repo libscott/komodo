@@ -216,6 +216,5 @@ TEST_F(CCTest, testCustom)
 
     cond = cc_readFulfillmentBinary(buf, encodedSize);
     ASSERT_TRUE(cond != 0);
-    raise(SIGSEGV);
 }
 
