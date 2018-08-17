@@ -46,7 +46,7 @@ struct CCType *CCTypeRegistry[] = {
 };
 
 
-int CCTypeRegistryLength = sizeof(CCTypeRegistry) / sizeof(CCTypeRegistry[0]);
+int CCTypeRegistryLength = 16;
 
 
 void appendUriSubtypes(uint32_t mask, unsigned char *buf) {
@@ -317,7 +317,14 @@ CC *cc_new(int typeId) {
     ohi("cc_new");
      cond->type = typeId == CC_Anon ? &CC_AnonType : CCTypeRegistry[typeId];
      printf("%i, %u\n", typeId, CCTypeRegistry[typeId]);
+     printf("TypeRegLen: %u\n", CCTypeRegistryLength);
+     otrace(CCTypeRegistry, CCTypeRegistryLength * sizeof(void*));
      otrace(CCTypeRegistry[typeId], sizeof(CCType));
+    for (int i=0; i<CCTypeRegistryLength; i++)
+        if (CCTypeRegistry[i]) {
+            printf("Type: %i\n", i);
+            otrace(CCTypeRegistry[i], sizeof(CCType));
+        }
     ohi("cc_new");
      return cond;
 }
