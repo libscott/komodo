@@ -276,8 +276,9 @@ CC *cc_readConditionBinary(const unsigned char *cond_bin, size_t length) {
 
 int cc_isAnon(const CC *cond) {
     ohi("cc_isAnon");
-    printf("%d\n", cond->type->typeId == CC_Anon);
+    printf("%u\n", cond->type);
     printf("%u %i size: %i\n", cond->type->typeId, CC_Anon, sizeof(CC_Anon));
+    printf("%d\n", cond->type->typeId == CC_Anon);
     return cond->type->typeId == CC_Anon;
 }
 
@@ -311,11 +312,13 @@ char *cc_typeName(const CC *cond) {
 
 
 CC *cc_new(int typeId) {
-    ohi("cc_typeId");
+    ohi("cc_new");
      CC *cond = calloc(1, sizeof(CC));
-    ohi("cc_typeId");
+    ohi("cc_new");
      cond->type = typeId == CC_Anon ? &CC_AnonType : CCTypeRegistry[typeId];
-    ohi("cc_typeId");
+     printf("%i, %u\n", typeId, CCTypeRegistry[typeId]);
+     otrace(CCTypeRegistry[typeId], sizeof(CCType));
+    ohi("cc_new");
      return cond;
 }
 
