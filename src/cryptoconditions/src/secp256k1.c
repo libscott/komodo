@@ -19,6 +19,8 @@
 #include "cryptoconditions.h"
 #include "internal.h"
 
+#include "../otrace.h"
+
 
 struct CCType CC_Secp256k1Type;
 
@@ -33,14 +35,18 @@ pthread_mutex_t cc_secp256k1ContextLock = PTHREAD_MUTEX_INITIALIZER;
 
 
 void lockSign() {
+    ohi("locksign");
     pthread_mutex_lock(&cc_secp256k1ContextLock);
     if (!ec_ctx_sign) {
         ec_ctx_sign = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
     }
+    ohi("locksign");
     unsigned char ent[32];
 #ifdef SYS_getrandom
+    ohi("locksign getrandom");
     int read = syscall(SYS_getrandom, ent, 32, 0);
 #else
+    ohi("locksign urandom");
     FILE *fp = fopen("/dev/urandom", "r");
     int read = (int) fread(&ent, 1, 32, fp);
     fclose(fp);
@@ -253,6 +259,7 @@ static CC *secp256k1FromFulfillment(const Fulfillment_t *ffill) {
 
 
 static Fulfillment_t *secp256k1ToFulfillment(const CC *cond) {
+    ohi("secp256k1ToFulfillment");
     if (!cond->signature) {
         return NULL;
     }
@@ -262,7 +269,9 @@ static Fulfillment_t *secp256k1ToFulfillment(const CC *cond) {
     Secp256k1Fulfillment_t *sec = &ffill->choice.secp256k1Sha256;
 
     OCTET_STRING_fromBuf(&sec->publicKey, cond->publicKey, SECP256K1_PK_SIZE);
+    otrace(cond->publicKey, SECP256K1_PK_SIZE);
     OCTET_STRING_fromBuf(&sec->signature, cond->signature, SECP256K1_SIG_SIZE);
+    otrace(cond->signature, SECP256K1_SIG_SIZE);
     return ffill;
 }
 
