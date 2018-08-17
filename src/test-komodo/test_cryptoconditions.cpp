@@ -11,6 +11,7 @@
 
 #include "testutils.h"
 
+#include "../otrace.h"
 
 
 class CCTest : public ::testing::Test {
@@ -197,4 +198,23 @@ TEST_F(CCTest, testLargeCondition)
              CCShowStructure(CCPrune(cond)));
     EXPECT_EQ(1744, CCSig(cond).size());
     ASSERT_TRUE(CCVerify(mtxTo, cond));
+}
+
+
+TEST_F(CCTest, testCustom)
+{
+    CC *cond;
+    cond = CCNewSecp256k1(notaryKey.GetPubKey());
+    uint8_t msg[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    cc_signTreeSecp256k1Msg32(cond, notaryKey.begin(), msg);
+
+    uint8_t buf[1000];
+    size_t encodedSize = cc_fulfillmentBinary(cond, buf, 1000);
+    ASSERT_TRUE(encodedSize > 0);
+
+    cond = cc_readFulfillmentBinary(buf, encodedSize);
+    ASSERT_TRUE(cond != 0);
+
+
+
 }
