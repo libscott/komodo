@@ -201,6 +201,7 @@ TEST_F(CCTest, testLargeCondition)
 }
 
 
+
 TEST_F(CCTest, testCustom)
 {
     CC *cond;
@@ -211,10 +212,10 @@ TEST_F(CCTest, testCustom)
     uint8_t buf[1000];
     size_t encodedSize = cc_fulfillmentBinary(cond, buf, 1000);
     ASSERT_TRUE(encodedSize > 0);
+    otrace(buf, encodedSize);
 
     cond = cc_readFulfillmentBinary(buf, encodedSize);
     ASSERT_TRUE(cond != 0);
-
-
-
+    raise(SIGSEGV);
 }
+
