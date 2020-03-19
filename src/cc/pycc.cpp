@@ -9,19 +9,6 @@
 #include "cc/pycc.h"
 #include "primitives/transaction.h"
 
-// TODO:
-// Py_DECREF Python objects everywhere!
-
-
-// bool PythonRunCCEval(const CC *cond, CTransaction &tx, unsigned int nIn) {
-//     std::vector<uint8_t> rawTx = E_MARSHAL(ss << tx);
-//     PyObject *pyRawTx = PyBytes_FromStringAndSize((const char*) rawTx.data(), rawTx.size());
-//     PyObject *pyRet = PyObject_CallFunctionObjArgs(pyccEval, pyRawTx, NULL);
-//     int succeed = PyObject_IsTrue(pyRet);
-//     Py_DECREF(pyRet);
-//     Py_DECREF(pyRawTx);
-//     return succeed;
-// }
 
 Eval* getEval(PyObject* self)
 {
@@ -146,20 +133,28 @@ bool PyccRunGlobalCCEval(Eval* eval, const CTransaction& txTo, unsigned int nIn,
 {
     PyBlockchain* chain = CreatePyBlockchainAPI(eval);
     std::vector<uint8_t> txBin = E_MARSHAL(ss << txTo);
-    PyObject* out = PyObject_CallFunction(pyccGlobalEval, "Oy#iy#", chain,
-                                                                    txBin.begin(), txBin.size(),
-                                                                    nIn,
-                                                                    code, codeLength);
+    PyObject* out = PyObject_CallFunction(pyccGlobalEval,
+            "Oy#iy#", chain,
+                      txBin.begin(), txBin.size(),
+                      nIn,
+                      code, codeLength);
+    bool valid;
+    char* err_s;
 
-    if (!PyBool_Check(out)) {
-        printf("pycc module eval function did not return a boolean\n");
-        exit(1);
+    if (out == Py_None) {
+        valid = eval->Valid();
+    } else if (PyArg_ParseTuple(out, "s", &err_s)) {
+        valid = eval->Invalid(std::string(err_s));
+    } else {
+        valid = eval->Error("PYCC validation returned invalid type.\n"
+                            "Should return None on success or a unicode error message\n"
+                            "on failure");
     }
-
-    bool valid = out == Py_True;
+    
     Py_DECREF(out);
     return valid;
 }
+
 
 void PyccGlobalInit(std::string moduleName)
 {
