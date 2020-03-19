@@ -141,13 +141,16 @@ bool PyccRunGlobalCCEval(Eval* eval, const CTransaction& txTo, unsigned int nIn,
     bool valid;
     char* err_s;
 
-    if (out == Py_None) {
+    if (PyErr_Occurred() != NULL) {
+        PyErr_PrintEx(0);
+        valid = eval->Error("PYCC module raised an exception");
+    } else if (out == Py_None) {
         valid = eval->Valid();
     } else if (PyArg_ParseTuple(out, "s", &err_s)) {
         valid = eval->Invalid(std::string(err_s));
     } else {
-        valid = eval->Error("PYCC validation returned invalid type.\n"
-                            "Should return None on success or a unicode error message\n"
+        valid = eval->Error("PYCC validation returned invalid type. "
+                            "Should return None on success or a unicode error message "
                             "on failure");
     }
     
