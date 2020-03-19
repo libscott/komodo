@@ -133,25 +133,29 @@ bool PyccRunGlobalCCEval(Eval* eval, const CTransaction& txTo, unsigned int nIn,
 {
     PyBlockchain* chain = CreatePyBlockchainAPI(eval);
     std::vector<uint8_t> txBin = E_MARSHAL(ss << txTo);
-    PyObject* out = PyObject_CallFunction(pyccGlobalEval,
+    PyObject* out = PyObject_CallFunction(
+            pyccGlobalEval,
             "Oy#iy#", chain,
                       txBin.begin(), txBin.size(),
                       nIn,
                       code, codeLength);
+
     bool valid;
-    char* err_s;
 
     if (PyErr_Occurred() != NULL) {
         PyErr_PrintEx(0);
-        valid = eval->Error("PYCC module raised an exception");
-    } else if (out == Py_None) {
+        return eval->Error("PYCC module raised an exception");
+    }
+
+    if (out == Py_None) {
         valid = eval->Valid();
-    } else if (PyArg_ParseTuple(out, "s", &err_s)) {
-        valid = eval->Invalid(std::string(err_s));
+    } else if (PyUnicode_Check(out)) {
+        long len;
+        char* err_s = PyUnicode_AsUTF8AndSize(out, &len);
+        valid = eval->Invalid(std::string(err_s, len));
     } else {
         valid = eval->Error("PYCC validation returned invalid type. "
-                            "Should return None on success or a unicode error message "
-                            "on failure");
+                            "Should return None on success or a unicode error message on failure");
     }
     
     Py_DECREF(out);

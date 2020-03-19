@@ -26,6 +26,7 @@ protected:
 
 		pyTestModule = PyccLoadModule("pycctest");
 		ASSERT_TRUE(pyTestModule != NULL);
+        PyccGlobalInit("pycctest");
     }
 
     unsigned int GetCurrentHeight() const {
@@ -52,10 +53,8 @@ void pyccTest(std::string testName, PyObject* expected)
 	PyDict_SetItemString(globals, "val", expected);
 	PyEval_EvalCode(code, globals, NULL);
 
-	std::string end = "1 == 1;";
-	int out = PyRun_SimpleString(&end[0]); // this will fail if theres an exception,
-	                                       // and also nicely display it in stderr
-	if (out == -1) {
+    if (PyErr_Occurred()) {
+        PyErr_PrintEx(0);
 		FAIL();
 	}
 }
@@ -71,4 +70,42 @@ TEST_F(TestPycc, test_testGetTxConfirmed)
 {
     const char* txBin = "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00";
     pyccTest("test_get_tx_confirmed", Py_BuildValue("y#", txBin, 10));
+}
+
+
+TEST_F(TestPycc, test_testGlobalEvalOk)
+{
+    CTransaction tx;
+    const char *code = "ok";
+    bool r = ExternalRunCCEval(this, tx, 0, (uint8_t*) code, 2);
+    ASSERT_TRUE(r);
+    ASSERT_TRUE(this->state.IsValid());
+}
+
+TEST_F(TestPycc, test_testGlobalEvalInvalid)
+{
+    CTransaction tx;
+    const char *code = "fail";
+    bool r = ExternalRunCCEval(this, tx, 0, (uint8_t*) code, 4);
+    ASSERT_FALSE(r);
+    ASSERT_TRUE(this->state.IsInvalid());
+    ASSERT_EQ("invalid", this->state.GetRejectReason());
+}
+
+TEST_F(TestPycc, test_testGlobalEvalError)
+{
+    CTransaction tx;
+    const char *code = "bla";
+    bool r = ExternalRunCCEval(this, tx, 0, (uint8_t*) code, 3);
+    ASSERT_FALSE(r);
+    ASSERT_TRUE(this->state.IsError());
+}
+
+TEST_F(TestPycc, test_testGlobalEvalReturnInvalid)
+{
+    CTransaction tx;
+    const char *code = "return_invalid";
+    bool r = ExternalRunCCEval(this, tx, 0, (uint8_t*) code, 14);
+    ASSERT_FALSE(r);
+    ASSERT_TRUE(this->state.IsError());
 }
