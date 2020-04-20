@@ -962,6 +962,23 @@ bool EvalScript(
                 }
                 break;
 
+                case OP_EVAL:
+                    if (!IsCryptoConditionsEnabled()) { // piggyback on this function for now
+                        goto INTERPRETER_DEFAULT;
+                    }
+
+                    if (stack.size() < 1) {
+                        return set_error(serror, SCRIPT_ERR_INVALID_STACK_OPERATION);
+                    }
+
+                    // implement ServerTransactionSignatureChecker::CheckEval
+                    int fSuccess = ((TransactionSignatureChecker*)checker)->CheckEval(stacktop(-1));
+
+                    popstack(stack);
+
+                    stack.push_back(fSuccess ? vchTrue : vchFalse);
+                break;
+
                 case OP_CHECKCRYPTOCONDITION:
                 case OP_CHECKCRYPTOCONDITIONVERIFY:
                 {

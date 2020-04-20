@@ -121,3 +121,8 @@ int ServerTransactionSignatureChecker::CheckEvalCondition(const CC *cond) const
     //fprintf(stderr,"call RunCCeval from ServerTransactionSignatureChecker::CheckEvalCondition\n");
     return RunCCEval(cond, *txTo, nIn);
 }
+
+int ServerTransactionSignatureChecker::CheckEval(std::vector<uint8_t>& codes) const
+    // call into Eval
+    return 0;
+}

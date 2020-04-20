@@ -201,6 +201,9 @@ enum opcodetype
     OP_PUBKEY = 0xfe,
     OP_CRYPTOCONDITION = 0xfc,
 
+    // contract
+    OP_EVAL = 0xe0,
+
     OP_INVALIDOPCODE = 0xff,
 };
 
