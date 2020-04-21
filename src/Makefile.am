@@ -53,6 +53,7 @@ LIBCRYPTOCONDITIONS=cryptoconditions/libcryptoconditions_core.la
 LIBSNARK=snark/libsnark.a
 LIBUNIVALUE=univalue/libunivalue.la
 LIBZCASH=libzcash.a
+LIBDEVCORE=libdevcore.a
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a
@@ -101,7 +102,8 @@ EXTRA_LIBRARIES += \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_CLI) \
-  libzcash.a
+  libzcash.a \
+  $(LIBDEVCORE)
 if ENABLE_WALLET
 BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
 EXTRA_LIBRARIES += $(LIBBITCOIN_WALLET)
@@ -430,6 +432,71 @@ if EXPERIMENTAL_ASM
   crypto_libbitcoin_crypto_a_SOURCES += crypto/sha256_sse4.cpp
 endif
 
+
+libdevcore_a_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/libdevcore -I$(srcdir)/libdevcore/utils
+libdevcore_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libdevcore_a_SOURCES = \
+	libdevcore/Address.cpp \
+	libdevcore/Base64.cpp \
+	libdevcore/Common.cpp \
+	libdevcore/CommonData.cpp \
+	libdevcore/CommonIO.cpp \
+	libdevcore/CommonJS.cpp \
+	libdevcore/DBFactory.cpp \
+	libdevcore/FileSystem.cpp \
+	libdevcore/FixedHash.cpp \
+	libdevcore/Guards.cpp \
+	libdevcore/JsonUtils.cpp \
+	libdevcore/LevelDB.cpp \
+	libdevcore/Log.cpp \
+	libdevcore/LoggingProgramOptions.cpp \
+	libdevcore/MemoryDB.cpp \
+	libdevcore/OverlayDB.cpp \
+	libdevcore/RLP.cpp \
+	libdevcore/SHA3.cpp \
+	libdevcore/StateCacheDB.cpp \
+	libdevcore/TransientDirectory.cpp \
+	libdevcore/TrieCommon.cpp \
+	libdevcore/TrieHash.cpp \
+	libdevcore/Worker.cpp
+
+libdevcore_a_H = \
+	libdevcore/Address.h \
+	libdevcore/Assertions.h \
+	libdevcore/Base64.h \
+	libdevcore/CommonData.h \
+	libdevcore/Common.h \
+	libdevcore/CommonIO.h \
+	libdevcore/CommonJS.h \
+	libdevcore/concurrent_queue.h \
+	libdevcore/DBFactory.h \
+	libdevcore/dbfwd.h \
+	libdevcore/db.h \
+	libdevcore/Exceptions.h \
+	libdevcore/FileSystem.h \
+	libdevcore/FixedHash.h \
+	libdevcore/Guards.h \
+	libdevcore/JsonUtils.h \
+	libdevcore/LevelDB.h \
+	libdevcore/LoggingProgramOptions.h \
+	libdevcore/Log.h \
+	libdevcore/LruCache.h \
+	libdevcore/MemoryDB.h \
+	libdevcore/OverlayDB.h \
+	libdevcore/RangeMask.h \
+	libdevcore/RLP.h \
+	libdevcore/SHA3.h \
+	libdevcore/StateCacheDB.h \
+	libdevcore/Terminal.h \
+	libdevcore/TransientDirectory.h \
+	libdevcore/TrieCommon.h \
+	libdevcore/TrieDB.h \
+	libdevcore/TrieHash.h \
+	libdevcore/UndefMacros.h \
+	libdevcore/vector_ref.h \
+	libdevcore/Worker.h
+
+
 if ENABLE_MINING
 EQUIHASH_TROMP_SOURCES = \
 	pow/tromp/equi_miner.h \
@@ -569,7 +636,8 @@ komodod_LDADD = \
   $(LIBLEVELDB) \
   $(LIBMEMENV) \
   $(LIBSECP256K1) \
-  $(LIBCRYPTOCONDITIONS)
+  $(LIBCRYPTOCONDITIONS) \
+  $(LIBDEVCORE)
 
 if ENABLE_WALLET
 komodod_LDADD += $(LIBBITCOIN_WALLET)
