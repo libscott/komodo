@@ -54,6 +54,7 @@ LIBSNARK=snark/libsnark.a
 LIBUNIVALUE=univalue/libunivalue.la
 LIBZCASH=libzcash.a
 LIBDEVCORE=libdevcore.a
+LIBACCOUNTS=libaccounts.a
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a
@@ -102,8 +103,10 @@ EXTRA_LIBRARIES += \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_CLI) \
-  libzcash.a \
-  $(LIBDEVCORE)
+  $(LIBZCASH) \
+  $(LIBDEVCORE) \
+  $(LIBACCOUNTS)
+
 if ENABLE_WALLET
 BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
 EXTRA_LIBRARIES += $(LIBBITCOIN_WALLET)
@@ -496,6 +499,10 @@ libdevcore_a_H = \
 	libdevcore/vector_ref.h \
 	libdevcore/Worker.h
 
+libaccounts_a_CPPFLAGS = $(AM_CPPFLAGS)
+libaccounts_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libaccounts_a_SOURCES = \
+  accounts/state.cpp
 
 if ENABLE_MINING
 EQUIHASH_TROMP_SOURCES = \
