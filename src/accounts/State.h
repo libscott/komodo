@@ -6,6 +6,9 @@
 #include <unordered_map>
 #include <map>
 
+#include "Account.h"
+#include "libdevcore/Address.h"
+#include "libdevcore/Common.h"
 #include "libdevcore/OverlayDB.h"
 #include "libdevcore/TrieDB.h"
 
@@ -15,19 +18,13 @@
 namespace dev
 {
 
-namespace kmd
+namespace eth
 {
 
 
-    using u256 = uint256;
-    using Address = uint160;
-    using AddressHash = std::unordered_set<Address>;
-    class Account { };
     using AccountMap = std::unordered_map<Address, Account>;
-    template <class KeyType, class DB>                                    
+    template <class KeyType, class DB>
     using SecureTrieDB = SpecificTrieDB<HashedGenericTrieDB<DB>, KeyType>;
-    uint256 Invaliduint256 = uint256S("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-
 
 
 
@@ -109,10 +106,9 @@ struct Change
     u256 key;         ///< Storage key. Last because used only in one case.
 
     /// Helper constructor to make change log update more readable.
-    Change(Kind _kind, Address const& _addr, u256 const& _value = uint256()):
+    Change(Kind _kind, Address const& _addr, u256 const& _value = 0):
             kind(_kind), address(_addr), value(_value)
-    {
-    }
+    { }
 
     /// Helper constructor especially for storage change log.
     Change(Address const& _addr, u256 const& _key, u256 const& _value):
@@ -166,7 +162,7 @@ public:
     explicit State(u256 const& _accountStartNonce, OverlayDB const& _db, BaseState _bs = BaseState::PreExisting);
 
     enum NullType { Null };
-    State(NullType): State(Invaliduint256, OverlayDB(), BaseState::Empty) {}
+    State(NullType): State(Invalid256, OverlayDB(), BaseState::Empty) {}
 
     /// Copy state object.
     State(State const& _s);

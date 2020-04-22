@@ -499,10 +499,12 @@ libdevcore_a_H = \
 	libdevcore/vector_ref.h \
 	libdevcore/Worker.h
 
-libaccounts_a_CPPFLAGS = $(AM_CPPFLAGS)
+libaccounts_a_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/libdevcore/utils
 libaccounts_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libaccounts_a_SOURCES = \
-  accounts/state.cpp
+  accounts/State.cpp \
+  accounts/Account.cpp \
+  accounts/ValidationSchemes.cpp
 
 if ENABLE_MINING
 EQUIHASH_TROMP_SOURCES = \
