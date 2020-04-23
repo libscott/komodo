@@ -160,6 +160,9 @@ const char* GetOpName(opcodetype opcode)
     case OP_CHECKCRYPTOCONDITIONVERIFY
                                    : return "OP_CHECKCRYPTOCONDITIONVERIFY";
 
+    // accounts
+    case OP_ACCOUNT_CREATE         : return "OP_ACCOUNT_CREATE";
+
     // expansion
     case OP_NOP1                   : return "OP_NOP1";
     case OP_NOP2                   : return "OP_NOP2";
@@ -412,6 +415,17 @@ bool CScript::IsCoinImport() const
         if (opcode > OP_0 && opcode <= OP_PUSHDATA4)
             return data.begin()[0] == EVAL_IMPORTCOIN;
     return false;
+}
+
+bool CScript::IsAccountCreate(std::vector<uint8_t>& vData) const
+{
+    const_iterator pc = this->begin();
+    opcodetype opcode;
+    return GetOp(pc, opcode, vData) &&
+        (opcode > OP_0 && opcode <= OP_PUSHDATA4) &&
+        GetOp(pc, opcode) &&
+        (opcode == OP_ACCOUNT_CREATE) &&
+        (pc == end());
 }
 
 bool CScript::IsPushOnly(const_iterator pc) const

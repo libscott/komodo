@@ -181,7 +181,7 @@ enum opcodetype
     OP_CHECKCRYPTOCONDITIONVERIFY = 0xcd,
 
     // accounts
-    OP_CREATE = 0xc0,
+    OP_ACCOUNT_CREATE = 0xc0,
     // OP_CALL = 0xc0,
 
     // expansion
@@ -601,6 +601,8 @@ public:
     bool IsPayToCryptoCondition() const;
     bool IsCoinImport() const;
     bool MayAcceptCryptoCondition() const;
+
+    bool IsAccountCreate(std::vector<uint8_t>& vData) const;
 
     /** Called by IsStandardTx and P2SH/BIP62 VerifyScript (which makes it consensus-critical). */
     bool IsPushOnly(const_iterator pc) const;

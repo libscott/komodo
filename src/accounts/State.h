@@ -11,7 +11,6 @@
 #include "libdevcore/Common.h"
 #include "libdevcore/OverlayDB.h"
 #include "libdevcore/TrieDB.h"
-// #include "txdb.h"
 
 #include <uint256.h>
 
@@ -24,9 +23,6 @@ namespace dev
 
 namespace eth
 {
-
-    // Globally available state db
-    extern OverlayDB pglobalaccounts;
 
 
     using AccountMap = std::unordered_map<Address, Account>;
