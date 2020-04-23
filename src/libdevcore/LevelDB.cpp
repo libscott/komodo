@@ -4,6 +4,8 @@
 #include "LevelDB.h"
 #include "Assertions.h"
 
+#include "dbwrapper.h"
+
 namespace dev
 {
 namespace db
@@ -86,17 +88,8 @@ leveldb::Options LevelDB::defaultDBOptions()
     return options;
 }
 
-LevelDB::LevelDB(boost::filesystem::path const& _path, leveldb::ReadOptions _readOptions,
-    leveldb::WriteOptions _writeOptions, leveldb::Options _dbOptions)
-  : m_db(nullptr), m_readOptions(std::move(_readOptions)), m_writeOptions(std::move(_writeOptions))
-{
-    auto db = static_cast<leveldb::DB*>(nullptr);
-    auto const status = leveldb::DB::Open(_dbOptions, _path.string(), &db);
-    checkStatus(status, _path);
-
-    assert(db);
-    m_db.reset(db);
-}
+LevelDB::LevelDB(CDBWrapper* dbwrapper) m_db(dbwrapper->pdb) { }
+LevelDB::LevelDB(leveldb::DB* db) m_db(db) { }
 
 std::string LevelDB::lookup(Slice _key) const
 {

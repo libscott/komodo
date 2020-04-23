@@ -16,10 +16,10 @@ namespace dev
 class OverlayDB: public StateCacheDB
 {
 public:
-    explicit OverlayDB(std::unique_ptr<db::DatabaseFace> _db = nullptr)
-      : m_db(_db.release(), [](db::DatabaseFace* db) {
-            clog(VerbosityDebug, "overlaydb") << "Closing state DB";
-            delete db;
+    explicit OverlayDB(db::DatabaseFace* _db = nullptr)
+      : m_db(_db, [](db::DatabaseFace* db) {
+            //clog(VerbosityDebug, "overlaydb") << "Closing state DB";
+            //delete db;
         })
     {}
 

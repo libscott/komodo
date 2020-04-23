@@ -21,6 +21,7 @@
 #include "main.h"
 #include "sodium.h"
 
+#include "accounts/accounts.h"
 #include "addrman.h"
 #include "alert.h"
 #include "arith_uint256.h"
@@ -1169,6 +1170,8 @@ bool ContextualCheckCoinbaseTransaction(int32_t slowflag,const CBlock *block,CBl
     return(true);
 }
 
+bool accountsEnabled = false;
+
 /**
  * Check a transaction contextually against a set of consensus rules valid at a given block height.
  *
@@ -1376,8 +1379,15 @@ bool ContextualCheckTransaction(int32_t slowflag,const CBlock *block, CBlockInde
 
         librustzcash_sapling_verification_ctx_free(ctx);
     }
+
+
+    if (accountsEnabled) {
+
+    }
+
     return true;
 }
+
 
 bool CheckTransaction(uint32_t tiptime,const CTransaction& tx, CValidationState &state,
                       libzcash::ProofVerifier& verifier,int32_t txIndex, int32_t numTxs)
@@ -2882,6 +2892,15 @@ namespace Consensus {
     }
 }// namespace Consensus
 
+bool ContextualCheckOutputs(const CTransaction &tx, CValidationState &state) {
+    if (accountsEnabled) {
+        if (!ContextualCheckAccountOutputs(tx, state)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool ContextualCheckInputs(
                            const CTransaction& tx,
                            CValidationState &state,
@@ -3690,6 +3709,11 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             if (!ContextualCheckInputs(tx, state, view, fExpensiveChecks, flags, false, txdata[i], chainparams.GetConsensus(), consensusBranchId, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
             control.Add(vChecks);
+
+            if (!ContextualCheckOutputs(tx, state)) {
+                // TODO: state, view, expensive checks, flags, and a gazillion other details
+                return false;
+            }
         }
 
         if (fAddressIndex) {

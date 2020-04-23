@@ -17,6 +17,7 @@ namespace db
 enum class DatabaseKind
 {
     LevelDB,
+    BitcoinDB,
     MemoryDB
 };
 

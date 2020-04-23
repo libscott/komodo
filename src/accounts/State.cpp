@@ -3,12 +3,14 @@
 
 #include "Account.h"
 #include "State.h"
+#include "txdb.h"
 #include "libdevcore/Address.h"
 #include "libdevcore/Assertions.h"
 #include "libdevcore/DBFactory.h"
 #include "libdevcore/TrieHash.h"
 #include "libdevcore/libethcore_Exceptions.h"
 #include <boost/filesystem.hpp>
+#include <memory>
 
 using namespace std;
 using namespace dev;
@@ -35,6 +37,11 @@ State::State(State const& _s):
     m_unrevertablyTouched(_s.m_unrevertablyTouched),
     m_accountStartNonce(_s.m_accountStartNonce)
 {}
+
+OverlayDB State::fromCoinsDB(CCoinsViewDB* coinsdb) {
+	auto ptr = new dev::db::LevelDB(coinsdb->db);
+    return OverlayDB(ptr);
+}
 
 // OverlayDB State::openDB(fs::path const& _basePath, h256 const& _genesisHash, WithExisting _we)
 // {

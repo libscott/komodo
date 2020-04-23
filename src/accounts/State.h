@@ -11,8 +11,12 @@
 #include "libdevcore/Common.h"
 #include "libdevcore/OverlayDB.h"
 #include "libdevcore/TrieDB.h"
+// #include "txdb.h"
 
 #include <uint256.h>
+
+
+class CCoinsViewDB;
 
 
 namespace dev
@@ -20,6 +24,9 @@ namespace dev
 
 namespace eth
 {
+
+    // Globally available state db
+    extern OverlayDB pglobalaccounts;
 
 
     using AccountMap = std::unordered_map<Address, Account>;
@@ -171,7 +178,8 @@ public:
     State& operator=(State const& _s);
 
     /// Open a DB - useful for passing into the constructor & keeping for other states that are necessary.
-    static OverlayDB openDB(boost::filesystem::path const& _path, h256 const& _genesisHash, WithExisting _we = WithExisting::Trust);
+    //static OverlayDB openDB(boost::filesystem::path const& _path, h256 const& _genesisHash, WithExisting _we = WithExisting::Trust);
+    static OverlayDB fromCoinsDB(CCoinsViewDB* coinsdb);
     OverlayDB const& db() const { return m_db; }
     OverlayDB& db() { return m_db; }
 

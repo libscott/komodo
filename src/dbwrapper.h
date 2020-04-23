@@ -10,6 +10,7 @@
 #include "streams.h"
 #include "util.h"
 #include "version.h"
+#include "libdevcore/LevelDB.h"
 
 #include <boost/filesystem/path.hpp>
 
@@ -156,6 +157,8 @@ public:
 
 class CDBWrapper
 {
+    friend class dev::db::LevelDB;
+
 private:
     //! custom environment this database is using (may be NULL in case of default environment)
     leveldb::Env* penv;

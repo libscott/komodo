@@ -23,6 +23,7 @@
 #endif
 
 #include "init.h"
+#include "accounts/State.h"
 #include "crypto/common.h"
 #include "primitives/block.h"
 #include "addrman.h"
@@ -1672,6 +1673,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
                 pnotarisations = new NotarisationDB(100*1024*1024, false, fReindex);
+                dev::eth::pglobalaccounts = dev::eth::State::fromCoinsDB(pcoinsdbview);
 
 
                 if (fReindex) {

@@ -180,6 +180,10 @@ enum opcodetype
     OP_CHECKCRYPTOCONDITION = 0xcc,
     OP_CHECKCRYPTOCONDITIONVERIFY = 0xcd,
 
+    // accounts
+    OP_CREATE = 0xc0,
+    // OP_CALL = 0xc0,
+
     // expansion
     OP_NOP1 = 0xb0,
     OP_NOP2 = 0xb1,

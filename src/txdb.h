@@ -23,6 +23,7 @@
 
 #include "coins.h"
 #include "dbwrapper.h"
+#include "accounts/State.h"
 
 #include <map>
 #include <string>
@@ -56,6 +57,7 @@ static const int64_t nMinDbCache = 4;
 /** CCoinsView backed by the coin database (chainstate/) */
 class CCoinsViewDB : public CCoinsView
 {
+    friend class dev::eth::State;
 protected:
     CDBWrapper db;
     CCoinsViewDB(std::string dbName, size_t nCacheSize, bool fMemory = false, bool fWipe = false);

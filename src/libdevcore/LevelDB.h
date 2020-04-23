@@ -10,6 +10,8 @@
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 
+class CDBWrapper;
+
 namespace dev
 {
 namespace db
@@ -21,10 +23,7 @@ public:
     static leveldb::WriteOptions defaultWriteOptions();
     static leveldb::Options defaultDBOptions();
 
-    explicit LevelDB(boost::filesystem::path const& _path,
-        leveldb::ReadOptions _readOptions = defaultReadOptions(),
-        leveldb::WriteOptions _writeOptions = defaultWriteOptions(),
-        leveldb::Options _dbOptions = defaultDBOptions());
+    LevelDB(CDBWrapper& dbwrapper);
 
     std::string lookup(Slice _key) const override;
     bool exists(Slice _key) const override;
@@ -37,7 +36,7 @@ public:
     void forEach(std::function<bool(Slice, Slice)> _f) const override;
 
 private:
-    std::unique_ptr<leveldb::DB> m_db;
+    leveldb::DB* m_db;
     leveldb::ReadOptions const m_readOptions;
     leveldb::WriteOptions const m_writeOptions;
 };
