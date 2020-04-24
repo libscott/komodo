@@ -421,10 +421,10 @@ bool CScript::IsAccountCreate(std::vector<uint8_t>& vData) const
 {
     const_iterator pc = this->begin();
     opcodetype opcode;
-    return GetOp(pc, opcode, vData) &&
-        (opcode > OP_0 && opcode <= OP_PUSHDATA4) &&
-        GetOp(pc, opcode) &&
+    return GetOp(pc, opcode) &&
         (opcode == OP_ACCOUNT_CREATE) &&
+        GetOp(pc, opcode, vData) &&
+        (opcode > OP_0 && opcode <= OP_PUSHDATA4) &&
         (pc == end());
 }
 

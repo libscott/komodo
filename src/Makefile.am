@@ -445,7 +445,6 @@ libdevcore_a_SOURCES = \
 	libdevcore/CommonData.cpp \
 	libdevcore/CommonIO.cpp \
 	libdevcore/CommonJS.cpp \
-	libdevcore/DBFactory.cpp \
 	libdevcore/FileSystem.cpp \
 	libdevcore/FixedHash.cpp \
 	libdevcore/Guards.cpp \
@@ -472,7 +471,6 @@ libdevcore_a_H = \
 	libdevcore/CommonIO.h \
 	libdevcore/CommonJS.h \
 	libdevcore/concurrent_queue.h \
-	libdevcore/DBFactory.h \
 	libdevcore/dbfwd.h \
 	libdevcore/db.h \
 	libdevcore/Exceptions.h \

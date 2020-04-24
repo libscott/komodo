@@ -88,8 +88,7 @@ leveldb::Options LevelDB::defaultDBOptions()
     return options;
 }
 
-LevelDB::LevelDB(CDBWrapper* dbwrapper) m_db(dbwrapper->pdb) { }
-LevelDB::LevelDB(leveldb::DB* db) m_db(db) { }
+LevelDB::LevelDB(CDBWrapper& dbwrapper) : m_db(dbwrapper.pdb) { }
 
 std::string LevelDB::lookup(Slice _key) const
 {

@@ -9,6 +9,7 @@
 #include "Exceptions.h"
 #include "FixedHash.h"
 #include "vector_ref.h"
+#include "uint256.h"
 
 #include <array>
 #include <exception>
@@ -385,6 +386,7 @@ public:
     RLPStream& append(bytes const& _s) { return append(bytesConstRef(&_s)); }
     RLPStream& append(std::string const& _s) { return append(bytesConstRef(_s)); }
     RLPStream& append(char const* _s) { return append(std::string(_s)); }
+    //RLPStream& append(uint256 const& u) { return 
     template <unsigned N> RLPStream& append(FixedHash<N> _s, bool _compact = false, bool _allOrNothing = false) { return _allOrNothing && !_s ? append(bytesConstRef()) : append(_s.ref(), _compact); }
 
     /// Appends an arbitrary RLP fragment - this *must* be a single item unless @a _itemCount is given.

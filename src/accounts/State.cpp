@@ -6,7 +6,6 @@
 #include "txdb.h"
 #include "libdevcore/Address.h"
 #include "libdevcore/Assertions.h"
-#include "libdevcore/DBFactory.h"
 #include "libdevcore/TrieHash.h"
 #include "libdevcore/libethcore_Exceptions.h"
 #include <boost/filesystem.hpp>
@@ -538,9 +537,9 @@ void State::setCode(Address const& _address, bytes&& _code, u256 const& _version
 {
     // rollback assumes that overwriting of the code never happens
     // (not allowed in contract creation logic in Executive)
-    // assert(!addressHasCode(_address));
-    // m_changeLog.emplace_back(Change::Code, _address);
-    // m_cache[_address].setCode(move(_code), _version);
+    assert(!addressHasCode(_address));
+    m_changeLog.emplace_back(Change::Code, _address);
+    m_cache[_address].setCode(move(_code), _version);
 }
 
 h256 State::codeHash(Address const& _a) const
