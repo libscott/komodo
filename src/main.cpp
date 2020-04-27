@@ -3557,6 +3557,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         }
     }
     CCheckQueueControl<CScriptCheck> control(fExpensiveChecks && nScriptCheckThreads ? &scriptcheckqueue : NULL);
+    CCheckCCEvalCodes evalcodeChecker;
 
     int64_t nTimeStart = GetTimeMicros();
     CAmount nFees = 0;
@@ -3689,7 +3690,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             //fprintf(stderr, "tx.%s nFees.%li interest.%li\n", tx.GetHash().ToString().c_str(), stakeTxValue, interest);
 
             std::vector<CScriptCheck> vChecks;
-            CCheckCCEvalCodes evalcodeChecker;
             if (!ContextualCheckInputs(tx, state, view, fExpensiveChecks, flags, false, txdata[i], chainparams.GetConsensus(), consensusBranchId, evalcodeChecker, nScriptCheckThreads ? &vChecks : NULL))
                 return false;
             control.Add(vChecks);
