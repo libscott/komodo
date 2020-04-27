@@ -41,22 +41,36 @@ void endiancpy(uint8_t *dest,uint8_t *src,int32_t len)
 #endif
 }
 
-CC *MakeCCcond1of2(uint8_t evalcode,CPubKey pk1,CPubKey pk2)
+CC *MakeCCcond1of2(uint8_t evalcode,CPubKey pk1,CPubKey pk2,bool mixedMode)
 {
-    std::vector<CC*> pks;
+    std::vector<CC*> pks; CC *Sig;
     pks.push_back(CCNewSecp256k1(pk1));
     pks.push_back(CCNewSecp256k1(pk2));
     CC *condCC = CCNewEval(E_MARSHAL(ss << evalcode));
-    CC *Sig = CCNewThreshold(1, pks);
+    if (mixedMode)
+    {
+        CC *SigPlain = CCNewThreshold(1, pks);
+        Sig = cc_anon(SigPlain);
+        cc_free(SigPlain);
+    }
+    else
+        Sig = CCNewThreshold(1, pks);
     return CCNewThreshold(2, {condCC, Sig});
 }
 
-CC *MakeCCcond1(uint8_t evalcode,CPubKey pk)
+CC *MakeCCcond1(uint8_t evalcode,CPubKey pk,bool mixedMode)
 {
-    std::vector<CC*> pks;
+    std::vector<CC*> pks; CC *Sig;
     pks.push_back(CCNewSecp256k1(pk));
     CC *condCC = CCNewEval(E_MARSHAL(ss << evalcode));
-    CC *Sig = CCNewThreshold(1, pks);
+    if (mixedMode)
+    {
+        CC *SigPlain = CCNewThreshold(1, pks);
+        Sig = cc_anon(SigPlain);
+        cc_free(SigPlain);
+    }
+    else
+        Sig = CCNewThreshold(1, pks);
     return CCNewThreshold(2, {condCC, Sig});
 }
 
@@ -97,10 +111,10 @@ bool makeCCopret(CScript &opret, std::vector<std::vector<unsigned char>> &vData)
     return true;
 }
 
-CTxOut MakeCC1vout(uint8_t evalcode,CAmount nValue, CPubKey pk, std::vector<std::vector<unsigned char>>* vData)
+CTxOut MakeCC1vout(uint8_t evalcode,CAmount nValue, CPubKey pk, std::vector<std::vector<unsigned char>>* vData,bool mixedMode)
 {
     CTxOut vout;
-    CC *payoutCond = MakeCCcond1(evalcode,pk);
+    CC *payoutCond = MakeCCcond1(evalcode,pk,mixedMode);
     vout = CTxOut(nValue,CCPubKey(payoutCond));
     if ( vData )
     {
@@ -114,10 +128,10 @@ CTxOut MakeCC1vout(uint8_t evalcode,CAmount nValue, CPubKey pk, std::vector<std:
     return(vout);
 }
 
-CTxOut MakeCC1of2vout(uint8_t evalcode,CAmount nValue,CPubKey pk1,CPubKey pk2, std::vector<std::vector<unsigned char>>* vData)
+CTxOut MakeCC1of2vout(uint8_t evalcode,CAmount nValue,CPubKey pk1,CPubKey pk2, std::vector<std::vector<unsigned char>>* vData,bool mixedMode)
 {
     CTxOut vout;
-    CC *payoutCond = MakeCCcond1of2(evalcode,pk1,pk2);
+    CC *payoutCond = MakeCCcond1of2(evalcode,pk1,pk2,mixedMode);
     vout = CTxOut(nValue,CCPubKey(payoutCond));
     if ( vData )
     {
